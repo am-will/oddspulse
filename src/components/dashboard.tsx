@@ -479,7 +479,7 @@ function IngestPanel() {
           Bearer-authorize a request to the ingest endpoint to capture a fresh tape of snapshots.
         </p>
         <code className="mt-4 inline-block border-b border-[color:var(--color-rule-strong)] pb-1 font-mono text-[12.5px] tracking-tight text-paper">
-          POST <span style={{ color: "var(--color-amber)" }}>/api/ingest/run</span>
+          GET <span style={{ color: "var(--color-amber)" }}>/api/ingest/run</span>
         </code>
       </div>
     </section>
