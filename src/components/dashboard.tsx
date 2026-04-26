@@ -151,26 +151,22 @@ function Tape({ markets }: { markets: HotMarket[] }) {
 
 function Hero({ markets, avgHeat, sources }: { markets: number; avgHeat: number; sources: string }) {
   return (
-    <section className="grid grid-cols-1 gap-10 pt-14 pb-12 lg:grid-cols-[1.55fr_1fr] lg:gap-16">
+    <section className="grid grid-cols-1 gap-10 pt-14 pb-12 lg:grid-cols-[1fr_280px] lg:gap-16">
       <div className="animate-rise">
         <div className="eyebrow flex items-center gap-3">
           <span className="inline-block h-px w-7 bg-[color:var(--color-amber)]" />
           Issue 001 · Prediction-market tape
         </div>
 
-        <h1 className="mt-7 text-paper">
-          <span className="block text-[clamp(56px,8.5vw,128px)] leading-[0.92] tracking-[-0.035em]">
-            Reading the market
-          </span>
-          <span className="display-serif block text-[clamp(64px,9.5vw,148px)] leading-[0.85] tracking-[-0.035em] text-amber-300" style={{ color: "var(--color-amber)" }}>
+        <h1 className="mt-7 max-w-[18ch] text-[clamp(48px,6.4vw,92px)] leading-[0.98] tracking-[-0.03em] text-paper">
+          Reading the market{" "}
+          <span className="display-serif text-[clamp(52px,7vw,104px)] leading-[0.95] tracking-[-0.03em]" style={{ color: "var(--color-amber)" }}>
             before
-          </span>
-          <span className="block text-[clamp(56px,8.5vw,128px)] leading-[0.92] tracking-[-0.035em]">
-            it goes obvious.
-          </span>
+          </span>{" "}
+          it goes obvious.
         </h1>
 
-        <p className="mt-9 max-w-[58ch] text-[15.5px] leading-[1.65] text-paper-dim">
+        <p className="mt-8 max-w-[62ch] text-[15.5px] leading-[1.65] text-paper-dim">
           A late-night terminal for Polymarket and Kalshi. Markets ranked by deterministic heat —
           price, liquidity, open interest, context — never noise. Tabular numerals, hairline rules,
           one ember of amber.
