@@ -265,7 +265,7 @@ function MarketTable({ markets, sample, query }: { markets: HotMarket[]; sample:
       <div className="hidden grid-cols-[64px_1fr_92px_120px_88px_120px] gap-6 border-b border-[color:var(--color-rule-strong)] pb-2.5 md:grid">
         <span className="eyebrow">heat</span>
         <span className="eyebrow">market</span>
-        <span className="eyebrow text-right">price</span>
+        <span className="eyebrow text-right">yes price</span>
         <span className="eyebrow text-right">24h vol</span>
         <span className="eyebrow text-right">spread</span>
         <span className="eyebrow text-right">closes</span>
@@ -340,7 +340,7 @@ function MarketRow({ market, sample, index }: { market: HotMarket; sample: boole
 
         {/* mobile metrics */}
         <div className="col-span-2 grid grid-cols-3 gap-4 border-t border-[color:var(--color-rule)] pt-3 md:hidden">
-          <MobileMetric label="price" value={formatPct(market.snapshot?.price)} />
+          <MobileMetric label="yes price" value={formatPct(market.snapshot?.price)} />
           <MobileMetric label="24h vol" value={formatMoney(market.snapshot?.volume24h ?? market.snapshot?.volume)} />
           <MobileMetric label="spread" value={formatPct(market.snapshot?.spread)} />
         </div>
