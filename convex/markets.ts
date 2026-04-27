@@ -159,6 +159,52 @@ export const logIngestRun = mutation({
   },
 });
 
+export const sourceHealth = query({
+  args: {},
+  handler: async () => {
+    const has = (name: string) => Boolean(process.env[name]?.trim());
+    const newsApiEnabled = has("NEWSAPI_KEY") && (process.env.NODE_ENV !== "production" || process.env.ENABLE_NEWSAPI_IN_PRODUCTION === "true");
+
+    return [
+      {
+        source: "convex",
+        status: "ok",
+        message: "Configured for persistent snapshots",
+      },
+      { source: "polymarket", status: "ok", message: "Public Gamma/CLOB data" },
+      {
+        source: "kalshi",
+        status: has("KALSHI_API_KEY_ID") && has("KALSHI_PRIVATE_KEY") ? "ok" : "disabled",
+        message: has("KALSHI_API_KEY_ID") && has("KALSHI_PRIVATE_KEY") ? "Kalshi credentials configured" : "Kalshi may require free API credentials for authenticated reads",
+      },
+      {
+        source: "gnews",
+        status: has("GNEWS_API_KEY") ? "ok" : "disabled",
+        message: has("GNEWS_API_KEY") ? "Free-tier key configured" : "Missing optional GNEWS_API_KEY",
+      },
+      {
+        source: "newsapi",
+        status: newsApiEnabled ? "ok" : "disabled",
+        message: has("NEWSAPI_KEY")
+          ? process.env.NODE_ENV === "production" && process.env.ENABLE_NEWSAPI_IN_PRODUCTION !== "true"
+            ? "Disabled in production unless ENABLE_NEWSAPI_IN_PRODUCTION=true"
+            : "Developer/free key configured"
+          : "Missing optional NEWSAPI_KEY",
+      },
+      {
+        source: "reddit",
+        status: has("REDDIT_CLIENT_ID") && has("REDDIT_CLIENT_SECRET") ? "ok" : "disabled",
+        message: has("REDDIT_CLIENT_ID") && has("REDDIT_CLIENT_SECRET") ? "OAuth credentials configured" : "V1 uses compliant Reddit search links unless OAuth search is enabled later",
+      },
+      {
+        source: "rss",
+        status: has("RSS_FEEDS") ? "ok" : "disabled",
+        message: has("RSS_FEEDS") ? "RSS feeds configured" : "Missing optional RSS_FEEDS",
+      },
+    ];
+  },
+});
+
 export const previousSnapshots = query({
   args: { marketIds: v.array(v.string()) },
   handler: async (ctx, { marketIds }) => {
