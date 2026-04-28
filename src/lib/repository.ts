@@ -1,6 +1,6 @@
 import { api } from "../../convex/_generated/api";
 import { fetchAction, fetchQuery } from "convex/nextjs";
-import type { ContextItem, HotMarket, MarketSnapshot, TrendScore } from "./types";
+import type { ContextItem, HotMarket, MarketSnapshot, SourceHealth, TrendScore } from "./types";
 
 type ConvexMarketRow = {
   marketId: string;
@@ -151,4 +151,9 @@ export async function getMarketDetail(platform: string, externalId: string) {
 export async function runConvexIngest() {
   if (!hasConvexConfig()) throw new Error("Missing NEXT_PUBLIC_CONVEX_URL");
   return fetchAction(api.ingest.run, {});
+}
+
+export async function getConvexSourceHealth(): Promise<SourceHealth[]> {
+  if (!hasConvexConfig()) return [];
+  return (await fetchQuery(api.markets.sourceHealth, {})) as SourceHealth[];
 }
