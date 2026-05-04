@@ -101,7 +101,12 @@ function trendFromConvex(row: {
 
 export async function getHotMarkets(limit = 50): Promise<HotMarket[]> {
   if (!hasConvexConfig()) return [];
-  const rows = (await fetchQuery(api.markets.hot, { limit })) as ConvexHotRow[];
+  let rows: ConvexHotRow[];
+  try {
+    rows = (await fetchQuery(api.markets.hot, { limit })) as ConvexHotRow[];
+  } catch {
+    return [];
+  }
   return rows.map(({ market, snapshot, trend, contextItems }) => ({
     id: market.marketId,
     platform: market.platform,
@@ -120,7 +125,12 @@ export async function getHotMarkets(limit = 50): Promise<HotMarket[]> {
 
 export async function getMarketDetail(platform: string, externalId: string) {
   if (!hasConvexConfig()) return null;
-  const row = (await fetchQuery(api.markets.detail, { platform, externalId })) as ConvexDetailRow | null;
+  let row: ConvexDetailRow | null;
+  try {
+    row = (await fetchQuery(api.markets.detail, { platform, externalId })) as ConvexDetailRow | null;
+  } catch {
+    return null;
+  }
   if (!row) return null;
   return {
     id: row.market.marketId,

@@ -1,10 +1,10 @@
 "use client";
 
-import { ArrowUpRight, Broadcast, Database, Funnel, MagnifyingGlass, Pulse, Sparkle, WarningCircle } from "@phosphor-icons/react";
+import { ArrowUpRight } from "@phosphor-icons/react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Badge } from "@/components/badge";
-import { ScoreRing } from "@/components/score-ring";
+import { HeatBar } from "@/components/score-ring";
 import { formatDate, formatMoney, formatPct } from "@/lib/format";
 import type { Category, HotMarket, SourceHealth } from "@/lib/types";
 
@@ -34,256 +34,458 @@ export function Dashboard({ initialMarkets, sources, sample }: { initialMarkets:
     : 0;
 
   return (
-    <main className="min-h-[100dvh] bg-[radial-gradient(circle_at_20%_0%,rgba(15,118,110,0.12),transparent_34%),linear-gradient(180deg,#f8fafc_0%,#eef3f8_100%)] px-4 py-5 text-slate-950 md:px-8 md:py-8">
-      <div className="pointer-events-none fixed inset-0 bg-[linear-gradient(rgba(15,23,42,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.035)_1px,transparent_1px)] bg-[size:44px_44px]" />
-      <div className="relative mx-auto max-w-[1400px]">
-        <header className="grid gap-6 border-b border-slate-200/80 pb-7 lg:grid-cols-[1.25fr_0.75fr] lg:items-end">
-          <div className="max-w-4xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/75 px-3 py-1.5 text-xs font-medium uppercase tracking-[0.2em] text-slate-500 shadow-[0_20px_40px_-32px_rgba(15,23,42,0.7)] backdrop-blur">
-              <span className="relative flex size-2">
-                <span className="absolute inline-flex size-full rounded-full bg-teal-600 opacity-60 animate-breathe" />
-                <span className="relative inline-flex size-2 rounded-full bg-teal-700" />
-              </span>
-              Prediction market radar
-            </div>
-            <h1 className="mt-5 max-w-3xl text-4xl font-semibold leading-none tracking-tighter text-slate-950 md:text-6xl">
-              OddsPulse reads the market before it looks obvious.
-            </h1>
-            <p className="mt-5 max-w-[62ch] text-base leading-7 text-slate-600">
-              A cleaner watch desk for Polymarket and Kalshi heat, built around price movement, liquidity, open interest, and context signals instead of noisy tables.
-            </p>
-          </div>
+    <main className="relative z-10 min-h-[100dvh] text-paper">
+      <TopBar sample={sample} />
+      <Tape markets={initialMarkets} />
 
-          <div className="grid gap-3 rounded-[2rem] border border-white/80 bg-white/75 p-5 shadow-[0_24px_70px_-42px_rgba(15,23,42,0.55)] backdrop-blur-xl">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">Desk status</span>
-              {sample ? (
-                <Badge className="border-amber-200 bg-amber-50 text-amber-700">sample feed</Badge>
-              ) : (
-                <Badge className="border-teal-200 bg-teal-50 text-teal-700">live cache</Badge>
-              )}
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              <HeroStat label="Markets" value={String(markets.length)} />
-              <HeroStat label="Avg heat" value={String(averageScore)} />
-              <HeroStat label="Sources" value={`${activeSources}/${sources.length}`} />
-            </div>
-          </div>
-        </header>
+      <div className="mx-auto max-w-[1480px] px-6 md:px-10">
+        <Hero markets={markets.length} avgHeat={averageScore} sources={`${activeSources}/${sources.length}`} />
 
-        <MarketTape markets={initialMarkets} />
+        <Toolbar
+          query={query}
+          setQuery={setQuery}
+          platform={platform}
+          setPlatform={setPlatform}
+          category={category}
+          setCategory={setCategory}
+        />
 
-        <section className="mt-7 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-          <div className="min-w-0">
-            <div className="grid gap-3 rounded-[2rem] border border-white/80 bg-white/80 p-3 shadow-[0_20px_60px_-46px_rgba(15,23,42,0.65)] backdrop-blur-xl md:grid-cols-[1fr_auto]">
-              <label className="grid gap-2">
-                <span className="sr-only">Search markets</span>
-                <span className="relative block">
-                  <MagnifyingGlass className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-slate-400" weight="bold" />
-                  <input
-                    value={query}
-                    onChange={(event) => setQuery(event.target.value)}
-                    placeholder="Search by event, asset, candidate, team"
-                    className="h-12 w-full rounded-[1.35rem] border border-slate-200 bg-slate-50/80 pl-12 pr-4 text-sm font-medium outline-none transition duration-300 focus:border-teal-600 focus:bg-white"
-                  />
-                </span>
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {platforms.map((item) => (
-                  <FilterButton key={item} active={platform === item} onClick={() => setPlatform(item)}>
-                    {item}
-                  </FilterButton>
-                ))}
-              </div>
-            </div>
-
-            <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
-              <div className="grid size-10 shrink-0 place-items-center rounded-full border border-slate-200 bg-white text-slate-500">
-                <Funnel className="size-4" weight="bold" />
-              </div>
-              {categories.map((item) => (
-                <FilterButton key={item} active={category === item} onClick={() => setCategory(item)} compact>
-                  {item}
-                </FilterButton>
-              ))}
-            </div>
-
-            <div className="mt-5 overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white shadow-[0_22px_60px_-48px_rgba(15,23,42,0.7)]">
-              <div className="grid grid-cols-[80px_1fr_170px_110px] border-b border-slate-200 bg-slate-50/80 px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 max-md:hidden">
-                <span>Heat</span>
-                <span>Market</span>
-                <span>Pulse</span>
-                <span>Window</span>
-              </div>
-
-              {markets.length ? (
-                <div className="divide-y divide-slate-100">
-                  {markets.map((market, index) => (
-                    <MarketRow key={market.id} market={market} sample={sample} index={index} />
-                  ))}
-                </div>
-              ) : (
-                <EmptyState query={query} />
-              )}
-            </div>
-          </div>
-
-          <aside className="grid content-start gap-5">
-            {topMarket ? <FocusPanel market={topMarket} /> : null}
-            <SourcePanel sources={sources} />
-            <div className="rounded-[2rem] border border-slate-200/80 bg-slate-950 p-5 text-white shadow-[0_28px_70px_-50px_rgba(15,23,42,0.9)]">
-              <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.18em] text-slate-400">
-                <Database className="size-4 text-teal-300" weight="bold" />
-                Convex ingest
-              </div>
-              <p className="mt-4 text-sm leading-6 text-slate-300">
-                Send a bearer-authorized request to <code className="rounded bg-white/10 px-1.5 py-1 font-mono text-xs">/api/ingest/run</code> to collect fresh market snapshots.
-              </p>
-            </div>
-          </aside>
+        <section className="grid grid-cols-1 gap-10 pb-24 lg:grid-cols-[minmax(0,1fr)_360px]">
+          <MarketTable markets={markets} sample={sample} query={query} />
+          <Aside topMarket={topMarket} sources={sources} />
         </section>
       </div>
     </main>
   );
 }
 
-function HeroStat({ label, value }: { label: string; value: string }) {
+/* ──────────────────────────────────────────────────────────── */
+/* top bar                                                       */
+/* ──────────────────────────────────────────────────────────── */
+
+function TopBar({ sample }: { sample: boolean }) {
+  const [now, setNow] = useState<string>("");
+  useEffect(() => {
+    const tick = () => {
+      const d = new Date();
+      const hh = String(d.getUTCHours()).padStart(2, "0");
+      const mm = String(d.getUTCMinutes()).padStart(2, "0");
+      const ss = String(d.getUTCSeconds()).padStart(2, "0");
+      setNow(`${hh}:${mm}:${ss}Z`);
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, []);
+
   return (
-    <div className="rounded-[1.35rem] border border-slate-200/70 bg-slate-50 px-4 py-3">
-      <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">{label}</div>
-      <div className="mt-2 font-mono text-2xl font-semibold text-slate-950">{value}</div>
+    <div className="border-b border-[color:var(--color-rule)]">
+      <div className="mx-auto flex max-w-[1480px] items-center justify-between px-6 py-3 md:px-10">
+        <div className="flex items-center gap-4">
+          <div className="grid size-7 place-items-center rounded-sm bg-amber-400/95 text-[11px] font-bold tracking-tight text-[color:var(--color-ink)]" style={{ background: "var(--color-amber)" }}>
+            OP
+          </div>
+          <div className="font-mono text-[11px] uppercase tracking-[0.28em] text-paper-dim">
+            ODDSPULSE <span className="mx-2 text-paper-mute">/</span> tape
+          </div>
+        </div>
+
+        <div className="flex items-center gap-5">
+          <div className="hidden items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-paper-mute md:flex">
+            <span className="live-dot" />
+            <span className="text-paper-dim">live</span>
+            <span className="text-paper-mute">·</span>
+            <span className="tabular text-paper-dim">{now || "00:00:00Z"}</span>
+          </div>
+          {sample ? (
+            <span className="font-mono text-[10.5px] uppercase tracking-[0.22em] text-amber-300" style={{ color: "var(--color-amber)" }}>
+              ⌁ sample feed
+            </span>
+          ) : (
+            <span className="font-mono text-[10.5px] uppercase tracking-[0.22em]" style={{ color: "var(--color-mint)" }}>
+              ⌁ live cache
+            </span>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
 
-function FilterButton({ active, compact, children, onClick }: { active: boolean; compact?: boolean; children: React.ReactNode; onClick: () => void }) {
+/* ──────────────────────────────────────────────────────────── */
+/* tape                                                          */
+/* ──────────────────────────────────────────────────────────── */
+
+function Tape({ markets }: { markets: HotMarket[] }) {
+  const tape = [...markets, ...markets, ...markets].slice(0, 24);
+  if (!tape.length) return null;
   return (
-    <button
-      onClick={onClick}
-      className={`shrink-0 rounded-full border px-4 text-sm font-medium capitalize transition duration-300 active:-translate-y-[1px] ${
-        compact ? "h-10" : "h-12"
-      } ${active ? "border-teal-700 bg-teal-700 text-white" : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"}`}
-    >
-      {children}
-    </button>
+    <div className="overflow-hidden border-b border-[color:var(--color-rule)]">
+      <div className="flex w-max gap-10 py-2.5 animate-tape">
+        {tape.map((market, index) => {
+          const score = Math.round(market.trend?.score ?? 0);
+          const hot = score >= 70;
+          return (
+            <div key={`${market.id}-${index}`} className="flex shrink-0 items-center gap-3 font-mono text-[11.5px] uppercase tracking-[0.14em] text-paper-dim">
+              <span
+                className="tabular font-semibold"
+                style={{ color: hot ? "var(--color-amber)" : "var(--color-paper-mute)" }}
+              >
+                {String(score).padStart(2, "0")}
+              </span>
+              <span className="text-paper-mute">▸</span>
+              <span className="max-w-[280px] truncate normal-case tracking-normal text-paper-dim">{market.title}</span>
+              <span className="text-paper-mute">·</span>
+              <span className="tabular text-paper-mute">{formatPct(market.snapshot?.price)}</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
-function MarketTape({ markets }: { markets: HotMarket[] }) {
-  const tape = [...markets, ...markets].slice(0, 12);
-  if (!tape.length) return null;
+/* ──────────────────────────────────────────────────────────── */
+/* hero                                                          */
+/* ──────────────────────────────────────────────────────────── */
+
+function Hero({ markets, avgHeat, sources }: { markets: number; avgHeat: number; sources: string }) {
   return (
-    <div className="mt-5 overflow-hidden rounded-full border border-slate-200 bg-white/70 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
-      <div className="flex w-max gap-3 px-3 animate-tape">
-        {tape.map((market, index) => (
-          <div key={`${market.id}-${index}`} className="flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-600">
-            <span className="font-mono text-teal-700">{Math.round(market.trend?.score ?? 0)}</span>
-            <span className="max-w-[220px] truncate">{market.title}</span>
-          </div>
+    <section className="grid grid-cols-1 gap-10 pt-14 pb-12 lg:grid-cols-[1.55fr_1fr] lg:gap-16">
+      <div className="animate-rise">
+        <div className="eyebrow flex items-center gap-3">
+          <span className="inline-block h-px w-7 bg-[color:var(--color-amber)]" />
+          Issue 001 · Prediction-market tape
+        </div>
+
+        <h1 className="mt-7 text-paper">
+          <span className="block text-[clamp(56px,8.5vw,128px)] leading-[0.92] tracking-[-0.035em]">
+            Reading the market
+          </span>
+          <span className="italic-serif block text-[clamp(64px,9.5vw,148px)] leading-[0.85] tracking-[-0.035em] text-amber-300" style={{ color: "var(--color-amber)" }}>
+            before
+          </span>
+          <span className="block text-[clamp(56px,8.5vw,128px)] leading-[0.92] tracking-[-0.035em]">
+            it goes obvious.
+          </span>
+        </h1>
+
+        <p className="mt-9 max-w-[58ch] text-[15.5px] leading-[1.65] text-paper-dim">
+          A late-night terminal for Polymarket and Kalshi. Markets ranked by deterministic heat —
+          price, liquidity, open interest, context — never noise. Tabular numerals, hairline rules,
+          one ember of amber.
+        </p>
+      </div>
+
+      <div className="grid content-end gap-0">
+        <StatRow label="Markets in view" value={String(markets).padStart(3, "0")} />
+        <StatRow label="Avg heat" value={String(avgHeat).padStart(2, "0")} accent />
+        <StatRow label="Sources online" value={sources} />
+      </div>
+    </section>
+  );
+}
+
+function StatRow({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+  return (
+    <div className="flex items-baseline justify-between border-t border-[color:var(--color-rule)] py-5">
+      <span className="eyebrow">{label}</span>
+      <span
+        className="tabular font-mono text-[44px] font-light leading-none"
+        style={{ color: accent ? "var(--color-amber)" : "var(--color-paper)" }}
+      >
+        {value}
+      </span>
+    </div>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────── */
+/* toolbar                                                       */
+/* ──────────────────────────────────────────────────────────── */
+
+function Toolbar({
+  query,
+  setQuery,
+  platform,
+  setPlatform,
+  category,
+  setCategory,
+}: {
+  query: string;
+  setQuery: (q: string) => void;
+  platform: (typeof platforms)[number];
+  setPlatform: (p: (typeof platforms)[number]) => void;
+  category: Category | "all";
+  setCategory: (c: Category | "all") => void;
+}) {
+  return (
+    <section className="mb-7 border-y border-[color:var(--color-rule)] py-5">
+      <div className="grid items-center gap-5 md:grid-cols-[1fr_auto]">
+        <label className="flex items-center gap-3">
+          <span className="eyebrow shrink-0">⌕ search</span>
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="event, asset, candidate, ticker…"
+            className="terminal w-full pb-1.5 font-sans text-[15px] tracking-tight"
+          />
+          <span className="font-mono text-paper-mute animate-blink">▌</span>
+        </label>
+        <div className="flex flex-wrap gap-2">
+          {platforms.map((item) => (
+            <button key={item} className="pill" data-active={platform === item} onClick={() => setPlatform(item)}>
+              {item}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-4 flex items-center gap-2 overflow-x-auto pb-1">
+        <span className="eyebrow shrink-0">filter</span>
+        <span className="text-paper-mute">·</span>
+        {categories.map((item) => (
+          <button key={item} className="pill" data-active={category === item} onClick={() => setCategory(item)}>
+            {item.replace("-", "/")}
+          </button>
         ))}
       </div>
+    </section>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────── */
+/* market table                                                  */
+/* ──────────────────────────────────────────────────────────── */
+
+function MarketTable({ markets, sample, query }: { markets: HotMarket[]; sample: boolean; query: string }) {
+  return (
+    <div>
+      <div className="mb-3 flex items-baseline justify-between">
+        <h2 className="italic-serif text-3xl tracking-[-0.02em]">The Tape</h2>
+        <span className="eyebrow tabular">{String(markets.length).padStart(3, "0")} listings</span>
+      </div>
+
+      <div className="hidden grid-cols-[64px_1fr_92px_120px_88px_120px] gap-6 border-b border-[color:var(--color-rule-strong)] pb-2.5 md:grid">
+        <span className="eyebrow">heat</span>
+        <span className="eyebrow">market</span>
+        <span className="eyebrow text-right">price</span>
+        <span className="eyebrow text-right">24h vol</span>
+        <span className="eyebrow text-right">spread</span>
+        <span className="eyebrow text-right">closes</span>
+      </div>
+
+      {markets.length ? (
+        <ul>
+          {markets.map((market, index) => (
+            <MarketRow key={market.id} market={market} sample={sample} index={index} />
+          ))}
+        </ul>
+      ) : (
+        <EmptyState query={query} />
+      )}
     </div>
   );
 }
 
 function MarketRow({ market, sample, index }: { market: HotMarket; sample: boolean; index: number }) {
+  const score = Math.round(market.trend?.score ?? 0);
   return (
-    <Link
-      href={`/markets/${market.platform}/${encodeURIComponent(market.externalId)}`}
-      className="grid gap-4 px-5 py-5 transition duration-300 hover:bg-slate-50/70 active:-translate-y-[1px] md:grid-cols-[80px_1fr_170px_110px]"
-      style={{ animationDelay: `${index * 45}ms` }}
-    >
-      <div className="animate-rise-in">
-        <ScoreRing score={market.trend?.score ?? 0} />
-      </div>
-      <div className="min-w-0 animate-rise-in" style={{ animationDelay: `${index * 45 + 40}ms` }}>
-        <div className="flex flex-wrap gap-2">
-          <Badge>{market.platform}</Badge>
-          <Badge>{market.category}</Badge>
-          {sample ? <Badge className="border-amber-200 bg-amber-50 text-amber-700">sample</Badge> : null}
+    <li className="market-row border-b border-[color:var(--color-rule)]" style={{ animationDelay: `${index * 35}ms` }}>
+      <Link
+        href={`/markets/${market.platform}/${encodeURIComponent(market.externalId)}`}
+        className="grid grid-cols-[1fr_auto] items-start gap-5 py-6 md:grid-cols-[64px_1fr_92px_120px_88px_120px] md:items-center md:gap-6"
+      >
+        {/* heat number */}
+        <div className="md:order-1">
+          <div
+            className="score-glyph text-[44px]"
+            style={{ color: score >= 70 ? "var(--color-amber)" : "var(--color-paper)" }}
+          >
+            {String(score).padStart(2, "0")}
+          </div>
         </div>
-        <h2 className="mt-3 max-w-3xl text-lg font-semibold leading-6 tracking-tight text-slate-950">{market.title}</h2>
-        <p className="mt-2 line-clamp-1 text-sm leading-6 text-slate-500">{market.trend?.why.join(" · ")}</p>
-      </div>
-      <div className="grid grid-cols-3 gap-3 text-sm md:grid-cols-1">
-        <Metric label="Price" value={formatPct(market.snapshot?.price)} />
-        <Metric label="24h Vol" value={formatMoney(market.snapshot?.volume24h ?? market.snapshot?.volume)} />
-        <Metric label="Spread" value={formatPct(market.snapshot?.spread)} />
-      </div>
-      <div className="flex items-end justify-between gap-3 md:grid md:content-between">
-        <span className="text-sm text-slate-500">Closes {formatDate(market.closeTime)}</span>
-        <span className="inline-flex items-center gap-1 text-sm font-semibold text-teal-700">
-          Detail <ArrowUpRight className="size-4" weight="bold" />
-        </span>
-      </div>
-    </Link>
+
+        {/* market info */}
+        <div className="min-w-0 md:order-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge>{market.platform}</Badge>
+            <Badge muted>{market.category}</Badge>
+            {sample ? <Badge tone="amber">sample</Badge> : null}
+          </div>
+          <h3 className="italic-serif mt-2.5 text-[22px] leading-[1.18] tracking-[-0.015em] text-paper">
+            {market.title}
+          </h3>
+          <div className="mt-2 max-w-[60ch]">
+            <HeatBar score={score} />
+          </div>
+          <p className="mt-2 line-clamp-1 text-[13px] leading-5 text-paper-mute">
+            {(market.trend?.why ?? []).join("  ·  ") || "Baseline activity detected"}
+          </p>
+        </div>
+
+        {/* price */}
+        <div className="hidden text-right font-mono text-[15px] tabular text-paper md:order-3 md:block">
+          {formatPct(market.snapshot?.price)}
+        </div>
+        {/* vol */}
+        <div className="hidden text-right font-mono text-[15px] tabular text-paper-dim md:order-4 md:block">
+          {formatMoney(market.snapshot?.volume24h ?? market.snapshot?.volume)}
+        </div>
+        {/* spread */}
+        <div className="hidden text-right font-mono text-[15px] tabular text-paper-dim md:order-5 md:block">
+          {formatPct(market.snapshot?.spread)}
+        </div>
+        {/* closes + arrow */}
+        <div className="hidden items-center justify-end gap-3 md:order-6 md:flex">
+          <span className="font-mono text-[12px] tabular text-paper-mute">{formatDate(market.closeTime)}</span>
+          <ArrowUpRight className="size-4 text-paper-mute transition group-hover:text-amber-300" weight="bold" />
+        </div>
+
+        {/* mobile metrics */}
+        <div className="col-span-2 grid grid-cols-3 gap-4 border-t border-[color:var(--color-rule)] pt-3 md:hidden">
+          <MobileMetric label="price" value={formatPct(market.snapshot?.price)} />
+          <MobileMetric label="24h vol" value={formatMoney(market.snapshot?.volume24h ?? market.snapshot?.volume)} />
+          <MobileMetric label="spread" value={formatPct(market.snapshot?.spread)} />
+        </div>
+      </Link>
+    </li>
   );
 }
 
-function Metric({ label, value }: { label: string; value: string }) {
+function MobileMetric({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">{label}</div>
-      <div className="mt-1 font-mono text-sm font-semibold text-slate-950">{value}</div>
-    </div>
-  );
-}
-
-function FocusPanel({ market }: { market: HotMarket }) {
-  return (
-    <div className="rounded-[2rem] border border-slate-200/80 bg-white p-5 shadow-[0_22px_60px_-46px_rgba(15,23,42,0.7)]">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-          <Pulse className="size-4 text-teal-700" weight="bold" />
-          Lead signal
-        </div>
-        <span className="font-mono text-sm font-semibold text-teal-700">{Math.round(market.trend?.score ?? 0)}</span>
-      </div>
-      <h2 className="mt-4 text-xl font-semibold leading-7 tracking-tight text-slate-950">{market.title}</h2>
-      <div className="mt-5 grid gap-3">
-        {(market.trend?.why ?? ["Baseline activity detected"]).slice(0, 3).map((reason) => (
-          <div key={reason} className="flex items-start gap-3 rounded-[1.35rem] border border-slate-100 bg-slate-50 p-3 text-sm leading-6 text-slate-600">
-            <Sparkle className="mt-1 size-4 shrink-0 text-teal-700" weight="bold" />
-            {reason}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function SourcePanel({ sources }: { sources: SourceHealth[] }) {
-  return (
-    <div className="rounded-[2rem] border border-slate-200/80 bg-white p-5 shadow-[0_22px_60px_-46px_rgba(15,23,42,0.7)]">
-      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-        <Broadcast className="size-4 text-teal-700" weight="bold" />
-        Source health
-      </div>
-      <div className="mt-5 grid gap-2">
-        {sources.map((source) => (
-          <div key={source.source} className="grid gap-2 rounded-[1.25rem] border border-slate-100 bg-slate-50 p-3">
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-sm font-semibold capitalize text-slate-800">{source.source}</span>
-              <Badge className={source.status === "ok" ? "border-teal-200 bg-teal-50 text-teal-700" : "border-slate-200 bg-white text-slate-500"}>{source.status}</Badge>
-            </div>
-            <p className="text-xs leading-5 text-slate-500">{source.message}</p>
-          </div>
-        ))}
-      </div>
+      <div className="eyebrow">{label}</div>
+      <div className="mt-1 font-mono text-[13px] tabular text-paper">{value}</div>
     </div>
   );
 }
 
 function EmptyState({ query }: { query: string }) {
   return (
-    <div className="grid place-items-center px-6 py-16 text-center">
-      <div className="grid size-14 place-items-center rounded-full border border-amber-200 bg-amber-50 text-amber-700">
-        <WarningCircle className="size-7" weight="bold" />
-      </div>
-      <h2 className="mt-5 text-xl font-semibold tracking-tight text-slate-950">No markets match this view</h2>
-      <p className="mt-2 max-w-[44ch] text-sm leading-6 text-slate-500">
-        {query ? "Try a broader term or clear one of the filters." : "No cached markets are available for this source/category combination yet."}
+    <div className="grid place-items-center border-b border-[color:var(--color-rule)] px-6 py-24 text-center">
+      <span className="font-mono text-[10.5px] uppercase tracking-[0.28em] text-paper-mute">⌀ no signal</span>
+      <h2 className="italic-serif mt-5 text-3xl tracking-[-0.015em]">Nothing matches that view.</h2>
+      <p className="mt-3 max-w-[44ch] text-sm leading-6 text-paper-mute">
+        {query ? "Loosen the search term, or pop a filter off." : "No cached markets in this slice yet — kick off the ingest."}
       </p>
     </div>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────── */
+/* aside                                                         */
+/* ──────────────────────────────────────────────────────────── */
+
+function Aside({ topMarket, sources }: { topMarket: HotMarket | undefined; sources: SourceHealth[] }) {
+  return (
+    <aside className="grid content-start gap-10 lg:sticky lg:top-6 lg:self-start">
+      {topMarket ? <FocusPanel market={topMarket} /> : null}
+      <SourcePanel sources={sources} />
+      <IngestPanel />
+    </aside>
+  );
+}
+
+function FocusPanel({ market }: { market: HotMarket }) {
+  const score = Math.round(market.trend?.score ?? 0);
+  const reasons = (market.trend?.why ?? ["Baseline activity detected"]).slice(0, 4);
+  return (
+    <section>
+      <div className="flex items-center justify-between border-t border-[color:var(--color-rule-strong)] pt-4">
+        <span className="eyebrow flex items-center gap-2">
+          <span className="live-dot" />
+          Lead signal
+        </span>
+        <span
+          className="score-glyph text-[56px]"
+          style={{ color: score >= 70 ? "var(--color-amber)" : "var(--color-paper)" }}
+        >
+          {String(score).padStart(2, "0")}
+        </span>
+      </div>
+
+      <h3 className="italic-serif mt-5 text-[28px] leading-[1.1] tracking-[-0.018em]">
+        {market.title}
+      </h3>
+
+      <ol className="mt-6 grid gap-3.5">
+        {reasons.map((reason, i) => (
+          <li key={reason} className="grid grid-cols-[28px_1fr] items-baseline gap-3 border-t border-[color:var(--color-rule)] pt-3">
+            <span className="font-mono text-[11px] tabular text-paper-mute">
+              {String(i + 1).padStart(2, "0")}
+            </span>
+            <span className="text-[14px] leading-[1.55] text-paper-dim">{reason}</span>
+          </li>
+        ))}
+      </ol>
+
+      <Link
+        href={`/markets/${market.platform}/${encodeURIComponent(market.externalId)}`}
+        className="mt-6 inline-flex items-center gap-2 border-b border-[color:var(--color-amber)] pb-1 font-mono text-[11px] uppercase tracking-[0.22em] text-amber-300"
+        style={{ color: "var(--color-amber)" }}
+      >
+        Read the full tape <ArrowUpRight className="size-3.5" weight="bold" />
+      </Link>
+    </section>
+  );
+}
+
+function SourcePanel({ sources }: { sources: SourceHealth[] }) {
+  return (
+    <section>
+      <div className="flex items-center justify-between border-t border-[color:var(--color-rule-strong)] pt-4">
+        <span className="eyebrow">Source health</span>
+        <span className="font-mono text-[11px] tabular text-paper-mute">
+          {sources.filter((s) => s.status === "ok").length}/{sources.length}
+        </span>
+      </div>
+      <ul className="mt-4 grid">
+        {sources.map((source) => {
+          const ok = source.status === "ok";
+          return (
+            <li key={source.source} className="grid gap-1 border-t border-[color:var(--color-rule)] py-3">
+              <div className="flex items-center justify-between gap-3">
+                <span className="flex items-center gap-2 text-[13px] capitalize text-paper">
+                  <span
+                    className="inline-block size-1.5 rounded-full"
+                    style={{ background: ok ? "var(--color-mint)" : "var(--color-paper-mute)" }}
+                  />
+                  {source.source}
+                </span>
+                <span
+                  className="font-mono text-[10.5px] uppercase tracking-[0.18em]"
+                  style={{ color: ok ? "var(--color-mint)" : "var(--color-paper-mute)" }}
+                >
+                  {source.status}
+                </span>
+              </div>
+              <p className="text-[12px] leading-[1.5] text-paper-mute">{source.message}</p>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
+function IngestPanel() {
+  return (
+    <section className="relative overflow-hidden border border-[color:var(--color-amber)]/40 bg-[color:var(--color-ink-2)] p-6">
+      <div className="glow-sweep absolute inset-0" />
+      <div className="relative">
+        <div className="eyebrow flex items-center gap-2">
+          <span style={{ color: "var(--color-amber)" }}>◇</span>
+          Convex ingest
+        </div>
+        <p className="mt-4 max-w-[42ch] text-[14px] leading-[1.55] text-paper-dim">
+          Bearer-authorize a request to the ingest endpoint to capture a fresh tape of snapshots.
+        </p>
+        <code className="mt-4 inline-block border-b border-[color:var(--color-rule-strong)] pb-1 font-mono text-[12.5px] tracking-tight text-paper">
+          POST <span style={{ color: "var(--color-amber)" }}>/api/ingest/run</span>
+        </code>
+      </div>
+    </section>
   );
 }
