@@ -441,7 +441,7 @@ function SourcePanel({ sources }: { sources: SourceHealth[] }) {
         {sources.map((source) => {
           const ok = source.status === "ok";
           return (
-            <li key={source.source} className="grid gap-1 border-t border-[color:var(--color-rule)] py-3">
+            <li key={source.source} className="border-t border-[color:var(--color-rule)] py-3">
               <div className="flex items-center justify-between gap-3">
                 <span className="flex items-center gap-2 text-[13px] capitalize text-paper">
                   <span
@@ -457,7 +457,6 @@ function SourcePanel({ sources }: { sources: SourceHealth[] }) {
                   {source.status}
                 </span>
               </div>
-              <p className="text-[12px] leading-[1.5] text-paper-mute">{source.message}</p>
             </li>
           );
         })}
