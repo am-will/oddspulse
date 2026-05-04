@@ -2,19 +2,48 @@ import { ArrowLeft, ArrowUpRight } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import { Badge } from "@/components/badge";
 import { HeatBar } from "@/components/score-ring";
+import { PriceChart } from "@/components/price-chart";
 import { formatDate, formatMoney, formatPct } from "@/lib/format";
 import { getMarketDetail } from "@/lib/repository";
 import { sampleHotMarkets } from "@/lib/sample-data";
+import {
+  fetchClobTokenIdByCondition,
+  fetchPolymarketHistory,
+  type Range,
+} from "@/lib/sources/polymarket-history";
 import type { ContextItem } from "@/lib/types";
 
 export const revalidate = 30;
 
-export default async function MarketPage({ params }: { params: Promise<{ platform: string; id: string }> }) {
+const RANGES: Range[] = ["1d", "1w", "1m", "max"];
+
+export default async function MarketPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ platform: string; id: string }>;
+  searchParams: Promise<{ range?: string }>;
+}) {
   const { platform, id } = await params;
+  const { range: rangeParam } = await searchParams;
+  const range: Range = (RANGES as string[]).includes(rangeParam ?? "")
+    ? (rangeParam as Range)
+    : "max";
   const decodedId = decodeURIComponent(id);
   const storedMarket = await getMarketDetail(platform, decodedId);
   const sampleMarket = sampleHotMarkets.find((item) => item.platform === platform && item.externalId === decodedId);
   const market = storedMarket ?? (sampleMarket ? { ...sampleMarket, snapshots: sampleMarket.snapshot ? [sampleMarket.snapshot] : [] } : null);
+
+  // Polymarket: fetch CLOB price history for the chart.
+  let chartPoints: Awaited<ReturnType<typeof fetchPolymarketHistory>> = [];
+  if (market && platform === "polymarket") {
+    try {
+      const tokenId = await fetchClobTokenIdByCondition(decodedId);
+      if (tokenId) chartPoints = await fetchPolymarketHistory(tokenId, range);
+    } catch {
+      chartPoints = [];
+    }
+  }
 
   if (!market) {
     return (
@@ -87,6 +116,30 @@ export default async function MarketPage({ params }: { params: Promise<{ platfor
           <Stat label="Open Interest" value={formatMoney(latest?.openInterest)} />
           <Stat label="Closes" value={formatDate(market.closeTime)} />
         </section>
+
+        {platform === "polymarket" ? (
+          <section className="pt-10">
+            <PriceChart
+              points={chartPoints}
+              range={range}
+              basePath={`/markets/${platform}/${encodeURIComponent(decodedId)}`}
+            />
+          </section>
+        ) : (
+          <section className="border-b border-[color:var(--color-rule)] pt-10">
+            <div className="flex items-baseline justify-between border-t border-[color:var(--color-rule-strong)] pt-4">
+              <span className="eyebrow">Price history</span>
+              <span className="font-mono text-[10.5px] uppercase tracking-[0.22em] text-paper-mute">
+                ⌀ kalshi history needs an api key
+              </span>
+            </div>
+            <p className="mt-4 max-w-[60ch] text-[13px] leading-[1.55] text-paper-mute">
+              Kalshi&apos;s historical price endpoint is gated behind authenticated reads. Add{" "}
+              <code className="font-mono text-paper-dim">KALSHI_API_KEY_ID</code> and{" "}
+              <code className="font-mono text-paper-dim">KALSHI_PRIVATE_KEY</code> to enable charts here.
+            </p>
+          </section>
+        )}
 
         <section className="grid gap-12 py-12 lg:grid-cols-[1.4fr_1fr]">
           <div>
