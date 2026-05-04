@@ -8,16 +8,35 @@ const KALSHI = "https://api.elections.kalshi.com/trade-api/v2";
 type KalshiMarket = {
   ticker?: string;
   title?: string;
+  eventTitle?: string;
   status?: string;
   close_time?: string;
   yes_bid?: number;
+  yes_bid_dollars?: string;
   yes_ask?: number;
+  yes_ask_dollars?: string;
   last_price?: number;
+  last_price_dollars?: string;
   volume?: number;
+  volume_fp?: string;
   volume_24h?: number;
+  volume_24h_fp?: string;
   liquidity?: number;
+  liquidity_dollars?: string;
   open_interest?: number;
+  open_interest_fp?: string;
 };
+
+type KalshiEvent = {
+  title?: string;
+  markets?: KalshiMarket[];
+};
+
+function num(value: unknown): number | null {
+  if (value == null || value === "") return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
 
 function buildKalshiHeaders(path: string, method = "GET"): Record<string, string> {
   const keyId = getOptionalEnv("KALSHI_API_KEY_ID");
@@ -37,20 +56,39 @@ function buildKalshiHeaders(path: string, method = "GET"): Record<string, string
   };
 }
 
+function cents(value: number | undefined, dollarValue: string | undefined): number | null {
+  if (value != null) return value / 100;
+  return num(dollarValue);
+}
+
+function metric(value: number | undefined, fixedPointValue: string | undefined): number | null {
+  return value ?? num(fixedPointValue);
+}
+
+function displayTitle(raw: KalshiMarket) {
+  if (raw.eventTitle && (!raw.title || raw.title.includes("  "))) return raw.eventTitle;
+  return raw.title;
+}
+
 export function normalizeKalshiMarket(raw: KalshiMarket): { market: Market; snapshot: MarketSnapshot } | null {
-  if (!raw.ticker || !raw.title) return null;
+  const title = displayTitle(raw);
+  if (!raw.ticker || !title) return null;
   const id = `kalshi:${raw.ticker}`;
-  const bestBid = raw.yes_bid != null ? raw.yes_bid / 100 : null;
-  const bestAsk = raw.yes_ask != null ? raw.yes_ask / 100 : null;
-  const price = raw.last_price != null ? raw.last_price / 100 : bestBid != null && bestAsk != null ? (bestBid + bestAsk) / 2 : null;
+  const bestBid = cents(raw.yes_bid, raw.yes_bid_dollars);
+  const bestAsk = cents(raw.yes_ask, raw.yes_ask_dollars);
+  const price = cents(raw.last_price, raw.last_price_dollars) ?? (bestBid != null && bestAsk != null ? (bestBid + bestAsk) / 2 : null);
+  const volume = metric(raw.volume, raw.volume_fp);
+  const volume24h = metric(raw.volume_24h, raw.volume_24h_fp);
+  const liquidity = metric(raw.liquidity, raw.liquidity_dollars);
+  const openInterest = metric(raw.open_interest, raw.open_interest_fp);
   return {
     market: {
       id,
       platform: "kalshi",
       externalId: raw.ticker,
       ticker: raw.ticker,
-      title: raw.title,
-      category: categorize(raw.title),
+      title,
+      category: categorize(title),
       url: `https://kalshi.com/markets/${raw.ticker}`,
       status: raw.status ?? "active",
       closeTime: raw.close_time ?? null,
@@ -60,11 +98,11 @@ export function normalizeKalshiMarket(raw: KalshiMarket): { market: Market; snap
       marketId: id,
       ts: new Date().toISOString(),
       price,
-      volume: raw.volume ?? null,
-      volume24h: raw.volume_24h ?? null,
-      liquidity: raw.liquidity ?? null,
+      volume,
+      volume24h,
+      liquidity,
       spread: bestBid != null && bestAsk != null ? Math.max(0, bestAsk - bestBid) : null,
-      openInterest: raw.open_interest ?? null,
+      openInterest,
       bestBid,
       bestAsk,
       raw,
@@ -73,11 +111,15 @@ export function normalizeKalshiMarket(raw: KalshiMarket): { market: Market; snap
 }
 
 export async function fetchKalshiMarkets(limit = 100) {
-  const path = `/markets?limit=${limit}&status=open`;
+  const path = `/events?limit=${Math.min(limit, 200)}&status=open&with_nested_markets=true`;
   const response = await fetch(`${KALSHI}${path}`, {
     headers: buildKalshiHeaders(path),
   });
   if (!response.ok) throw new Error(`Kalshi ${response.status}`);
-  const data = (await response.json()) as { markets?: KalshiMarket[] };
-  return (data.markets ?? []).map(normalizeKalshiMarket).filter(Boolean) as Array<NonNullable<ReturnType<typeof normalizeKalshiMarket>>>;
+  const data = (await response.json()) as { events?: KalshiEvent[] };
+  return (data.events ?? [])
+    .flatMap((event) => (event.markets ?? []).map((market) => ({ ...market, eventTitle: event.title })))
+    .map(normalizeKalshiMarket)
+    .filter(Boolean)
+    .slice(0, limit) as Array<NonNullable<ReturnType<typeof normalizeKalshiMarket>>>;
 }
