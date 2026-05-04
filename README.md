@@ -42,4 +42,5 @@ curl -H "authorization: Bearer $CRON_SECRET" http://localhost:3000/api/ingest/ru
 - `CRON_SECRET` should be set on the Next.js host for the ingest endpoint.
 - NewsAPI free keys are disabled in production unless `ENABLE_NEWSAPI_IN_PRODUCTION=true`.
 - Missing optional keys disable only that source.
+- `RSS_FEEDS` accepts comma-separated feed URLs. The default mix covers crypto, politics, macro/regulators, tech, global news, and sports.
 - Missing Convex env lets the UI load with sample data, but ingestion will not persist.

@@ -6,6 +6,8 @@ import type { ContextItem, Market } from "../types";
 
 type Article = { title?: string; url?: string; publishedAt?: string; published_at?: string; link?: string; isoDate?: string };
 
+const RSS_FEED_LIMIT = 12;
+
 function itemId(source: string, marketId: string, url: string) {
   return crypto.createHash("sha1").update(`${source}:${marketId}:${url}`).digest("hex");
 }
@@ -62,7 +64,7 @@ export async function fetchRssContext(market: Market) {
     .split(",")
     .map((feed) => feed.trim())
     .filter(Boolean)
-    .slice(0, 8);
+    .slice(0, RSS_FEED_LIMIT);
   if (!feeds.length) return [];
   const parser = new Parser();
   const keywords = extractKeywords(market.title, 4);
