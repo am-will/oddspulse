@@ -379,7 +379,6 @@ function Aside({ topMarket, sources }: { topMarket: HotMarket | undefined; sourc
     <aside className="grid content-start gap-10 lg:sticky lg:top-6 lg:self-start">
       {topMarket ? <FocusPanel market={topMarket} /> : null}
       <SourcePanel sources={sources} />
-      <IngestPanel />
     </aside>
   );
 }
@@ -389,22 +388,27 @@ function FocusPanel({ market }: { market: HotMarket }) {
   const reasons = (market.trend?.why ?? ["Baseline activity detected"]).slice(0, 4);
   return (
     <section>
-      <div className="flex items-center justify-between border-t border-[color:var(--color-rule-strong)] pt-4">
-        <span className="eyebrow flex items-center gap-2">
-          <span className="live-dot" />
-          Lead signal
-        </span>
-        <span
-          className="score-glyph text-[56px]"
-          style={{ color: score >= 70 ? "var(--color-amber)" : "var(--color-paper)" }}
-        >
-          {String(score).padStart(2, "0")}
-        </span>
-      </div>
+      <div className="relative overflow-hidden border border-[color:var(--color-amber)]/40 bg-[color:var(--color-ink-2)] p-6">
+        <div className="glow-sweep absolute inset-0" />
+        <div className="relative">
+          <div className="flex items-center justify-between border-b border-[color:var(--color-rule)] pb-4">
+            <span className="eyebrow flex items-center gap-2">
+              <span className="live-dot" />
+              Lead signal
+            </span>
+            <span
+              className="score-glyph text-[56px]"
+              style={{ color: score >= 70 ? "var(--color-amber)" : "var(--color-paper)" }}
+            >
+              {String(score).padStart(2, "0")}
+            </span>
+          </div>
 
-      <h3 className="display-serif mt-5 text-[28px] leading-[1.1] tracking-[-0.018em]">
-        {market.title}
-      </h3>
+          <h3 className="display-serif mt-5 text-[28px] leading-[1.1] tracking-[-0.018em]">
+            {market.title}
+          </h3>
+        </div>
+      </div>
 
       <ol className="mt-6 grid gap-3.5">
         {reasons.map((reason, i) => (
@@ -461,26 +465,6 @@ function SourcePanel({ sources }: { sources: SourceHealth[] }) {
           );
         })}
       </ul>
-    </section>
-  );
-}
-
-function IngestPanel() {
-  return (
-    <section className="relative overflow-hidden border border-[color:var(--color-amber)]/40 bg-[color:var(--color-ink-2)] p-6">
-      <div className="glow-sweep absolute inset-0" />
-      <div className="relative">
-        <div className="eyebrow flex items-center gap-2">
-          <span style={{ color: "var(--color-amber)" }}>◇</span>
-          Convex ingest
-        </div>
-        <p className="mt-4 max-w-[42ch] text-[14px] leading-[1.55] text-paper-dim">
-          Bearer-authorize a request to the ingest endpoint to capture a fresh tape of snapshots.
-        </p>
-        <code className="mt-4 inline-block border-b border-[color:var(--color-rule-strong)] pb-1 font-mono text-[12.5px] tracking-tight text-paper">
-          GET <span style={{ color: "var(--color-amber)" }}>/api/ingest/run</span>
-        </code>
-      </div>
     </section>
   );
 }
