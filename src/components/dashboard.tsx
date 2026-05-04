@@ -162,7 +162,7 @@ function Hero({ markets, avgHeat, sources }: { markets: number; avgHeat: number;
           <span className="block text-[clamp(56px,8.5vw,128px)] leading-[0.92] tracking-[-0.035em]">
             Reading the market
           </span>
-          <span className="italic-serif block text-[clamp(64px,9.5vw,148px)] leading-[0.85] tracking-[-0.035em] text-amber-300" style={{ color: "var(--color-amber)" }}>
+          <span className="display-serif block text-[clamp(64px,9.5vw,148px)] leading-[0.85] tracking-[-0.035em] text-amber-300" style={{ color: "var(--color-amber)" }}>
             before
           </span>
           <span className="block text-[clamp(56px,8.5vw,128px)] leading-[0.92] tracking-[-0.035em]">
@@ -262,7 +262,7 @@ function MarketTable({ markets, sample, query }: { markets: HotMarket[]; sample:
   return (
     <div>
       <div className="mb-3 flex items-baseline justify-between">
-        <h2 className="italic-serif text-3xl tracking-[-0.02em]">The Tape</h2>
+        <h2 className="display-serif text-3xl tracking-[-0.02em]">The Tape</h2>
         <span className="eyebrow tabular">{String(markets.length).padStart(3, "0")} listings</span>
       </div>
 
@@ -313,7 +313,7 @@ function MarketRow({ market, sample, index }: { market: HotMarket; sample: boole
             <Badge muted>{market.category}</Badge>
             {sample ? <Badge tone="amber">sample</Badge> : null}
           </div>
-          <h3 className="italic-serif mt-2.5 text-[22px] leading-[1.18] tracking-[-0.015em] text-paper">
+          <h3 className="display-serif mt-2.5 text-[22px] leading-[1.18] tracking-[-0.015em] text-paper">
             {market.title}
           </h3>
           <div className="mt-2 max-w-[60ch]">
@@ -366,7 +366,7 @@ function EmptyState({ query }: { query: string }) {
   return (
     <div className="grid place-items-center border-b border-[color:var(--color-rule)] px-6 py-24 text-center">
       <span className="font-mono text-[10.5px] uppercase tracking-[0.28em] text-paper-mute">⌀ no signal</span>
-      <h2 className="italic-serif mt-5 text-3xl tracking-[-0.015em]">Nothing matches that view.</h2>
+      <h2 className="display-serif mt-5 text-3xl tracking-[-0.015em]">Nothing matches that view.</h2>
       <p className="mt-3 max-w-[44ch] text-sm leading-6 text-paper-mute">
         {query ? "Loosen the search term, or pop a filter off." : "No cached markets in this slice yet — kick off the ingest."}
       </p>
@@ -406,7 +406,7 @@ function FocusPanel({ market }: { market: HotMarket }) {
         </span>
       </div>
 
-      <h3 className="italic-serif mt-5 text-[28px] leading-[1.1] tracking-[-0.018em]">
+      <h3 className="display-serif mt-5 text-[28px] leading-[1.1] tracking-[-0.018em]">
         {market.title}
       </h3>
 

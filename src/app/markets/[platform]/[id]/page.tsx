@@ -21,7 +21,7 @@ export default async function MarketPage({ params }: { params: Promise<{ platfor
       <main className="relative z-10 grid min-h-[100dvh] place-items-center px-6 text-paper">
         <div className="border-y border-[color:var(--color-rule-strong)] py-12 text-center">
           <span className="eyebrow">404 · void</span>
-          <h1 className="italic-serif mt-4 text-5xl tracking-[-0.02em]">Market not found.</h1>
+          <h1 className="display-serif mt-4 text-5xl tracking-[-0.02em]">Market not found.</h1>
           <Link
             href="/"
             className="mt-8 inline-flex items-center gap-2 border-b border-[color:var(--color-amber)] pb-1 font-mono text-[11px] uppercase tracking-[0.22em]"
@@ -54,7 +54,7 @@ export default async function MarketPage({ params }: { params: Promise<{ platfor
               <Badge muted>{market.category}</Badge>
               <Badge tone="amber">{market.status}</Badge>
             </div>
-            <h1 className="italic-serif mt-7 max-w-4xl text-[clamp(40px,6vw,88px)] leading-[0.95] tracking-[-0.025em]">
+            <h1 className="display-serif mt-7 max-w-4xl text-[clamp(40px,6vw,88px)] leading-[0.95] tracking-[-0.025em]">
               {market.title}
             </h1>
             <a
@@ -99,7 +99,7 @@ export default async function MarketPage({ params }: { params: Promise<{ platfor
               {(market.trend?.why ?? ["Baseline activity detected"]).map((reason: string, i: number) => (
                 <li key={reason} className="grid grid-cols-[36px_1fr] items-baseline gap-4 border-t border-[color:var(--color-rule)] py-5">
                   <span className="font-mono text-[12px] tabular text-paper-mute">{String(i + 1).padStart(2, "0")}</span>
-                  <span className="italic-serif text-[20px] leading-[1.35] tracking-[-0.012em] text-paper">{reason}</span>
+                  <span className="display-serif text-[20px] leading-[1.35] tracking-[-0.012em] text-paper">{reason}</span>
                 </li>
               ))}
             </ol>

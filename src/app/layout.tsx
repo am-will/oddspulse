@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
-import { Instrument_Serif, JetBrains_Mono, Bricolage_Grotesque } from "next/font/google";
+import { Fraunces, JetBrains_Mono, Bricolage_Grotesque } from "next/font/google";
 import "./globals.css";
 
-const serif = Instrument_Serif({
-  weight: "400",
-  style: ["normal", "italic"],
+const serif = Fraunces({
   subsets: ["latin"],
   variable: "--font-serif",
+  axes: ["SOFT", "opsz"],
   display: "swap",
 });
 
