@@ -2,7 +2,7 @@
 
 import { ArrowUpRight } from "@phosphor-icons/react";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Badge } from "@/components/badge";
 import { HeatBar } from "@/components/score-ring";
 import { formatDate, formatMoney, formatPct } from "@/lib/format";
@@ -15,17 +15,24 @@ export function Dashboard({ initialMarkets, sources, sample }: { initialMarkets:
   const [platform, setPlatform] = useState<(typeof platforms)[number]>("all");
   const [category, setCategory] = useState<Category | "all">("all");
   const [query, setQuery] = useState("");
+  const [markets, setMarkets] = useState(initialMarkets);
 
-  const markets = useMemo(
-    () =>
-      initialMarkets.filter((market) => {
-        const platformMatch = platform === "all" || market.platform === platform;
-        const categoryMatch = category === "all" || market.category === category;
-        const queryMatch = market.title.toLowerCase().includes(query.toLowerCase());
-        return platformMatch && categoryMatch && queryMatch;
-      }),
-    [category, initialMarkets, platform, query],
-  );
+  useEffect(() => {
+    const controller = new AbortController();
+    const params = new URLSearchParams({ limit: "75" });
+    if (platform !== "all") params.set("platform", platform);
+    if (category !== "all") params.set("category", category);
+    if (query.trim()) params.set("query", query.trim());
+
+    fetch(`/api/markets/hot?${params}`, { signal: controller.signal })
+      .then((response) => (response.ok ? response.json() : Promise.reject(new Error("Market request failed"))))
+      .then((data: { markets?: HotMarket[] }) => setMarkets(data.markets ?? []))
+      .catch((error) => {
+        if (error instanceof Error && error.name !== "AbortError") setMarkets([]);
+      })
+
+    return () => controller.abort();
+  }, [category, platform, query]);
 
   const topMarket = markets[0] ?? initialMarkets[0];
   const activeSources = sources.filter((source) => source.status === "ok").length;

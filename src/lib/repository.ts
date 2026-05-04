@@ -99,11 +99,17 @@ function trendFromConvex(row: {
   return row;
 }
 
-export async function getHotMarkets(limit = 50): Promise<HotMarket[]> {
+export type HotMarketFilters = {
+  platform?: string;
+  category?: string;
+  query?: string;
+};
+
+export async function getHotMarkets(limit = 50, filters: HotMarketFilters = {}): Promise<HotMarket[]> {
   if (!hasConvexConfig()) return [];
   let rows: ConvexHotRow[];
   try {
-    rows = (await fetchQuery(api.markets.hot, { limit })) as ConvexHotRow[];
+    rows = (await fetchQuery(api.markets.hot, { limit, ...filters })) as ConvexHotRow[];
   } catch {
     return [];
   }

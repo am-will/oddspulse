@@ -222,9 +222,21 @@ export const previousSnapshots = query({
 });
 
 export const hot = query({
-  args: { limit: v.optional(v.number()) },
-  handler: async (ctx, { limit }) => {
-    const scores = await ctx.db.query("trendScores").withIndex("by_score").order("desc").take(limit ?? 50);
+  args: {
+    limit: v.optional(v.number()),
+    platform: v.optional(v.string()),
+    category: v.optional(v.string()),
+    query: v.optional(v.string()),
+  },
+  handler: async (ctx, { limit, platform, category, query }) => {
+    const requestedLimit = limit ?? 50;
+    const hasFilters = Boolean(platform || category || query?.trim());
+    const scores = await ctx.db
+      .query("trendScores")
+      .withIndex("by_score")
+      .order("desc")
+      .take(hasFilters ? Math.max(requestedLimit * 8, 500) : requestedLimit);
+    const normalizedQuery = query?.trim().toLowerCase();
     const markets = [];
     for (const score of scores) {
       const market = await ctx.db
@@ -232,6 +244,9 @@ export const hot = query({
         .withIndex("by_market_id", (q) => q.eq("marketId", score.marketId))
         .unique();
       if (!market) continue;
+      if (platform && market.platform !== platform) continue;
+      if (category && market.category !== category) continue;
+      if (normalizedQuery && !market.title.toLowerCase().includes(normalizedQuery)) continue;
       const [snapshot] = await ctx.db
         .query("marketSnapshots")
         .withIndex("by_market_ts", (q) => q.eq("marketId", score.marketId))
@@ -242,6 +257,7 @@ export const hot = query({
         .withIndex("by_market", (q) => q.eq("marketId", score.marketId))
         .take(5);
       markets.push({ market, snapshot: snapshot ?? null, trend: score, contextItems: contexts });
+      if (markets.length >= requestedLimit) break;
     }
     return markets;
   },
