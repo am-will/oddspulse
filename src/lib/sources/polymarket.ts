@@ -8,6 +8,8 @@ type GammaMarket = {
   conditionId?: string;
   question?: string;
   slug?: string;
+  eventSlug?: string | null;
+  events?: Array<{ slug?: string | null }>;
   active?: boolean;
   closed?: boolean;
   endDate?: string;
@@ -23,6 +25,11 @@ function num(value: unknown): number | null {
   if (value == null || value === "") return null;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
+}
+
+function polymarketUrl(raw: GammaMarket) {
+  const slug = raw.eventSlug ?? raw.events?.find((event) => event.slug)?.slug ?? raw.slug;
+  return slug ? `https://polymarket.com/event/${slug}` : "https://polymarket.com";
 }
 
 export function normalizePolymarketMarket(raw: GammaMarket): { market: Market; snapshot: MarketSnapshot } | null {
@@ -41,7 +48,7 @@ export function normalizePolymarketMarket(raw: GammaMarket): { market: Market; s
       externalId,
       title,
       category: categorize(title),
-      url: raw.slug ? `https://polymarket.com/event/${raw.slug}` : "https://polymarket.com",
+      url: polymarketUrl(raw),
       status: raw.closed ? "closed" : raw.active === false ? "inactive" : "active",
       closeTime: raw.endDate ?? null,
       raw,
