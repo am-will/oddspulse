@@ -12,6 +12,22 @@ function itemId(source: string, marketId: string, url: string) {
   return crypto.createHash("sha1").update(`${source}:${marketId}:${url}`).digest("hex");
 }
 
+function sanitizeConvexValue(value: unknown): unknown {
+  if (value === null || typeof value === "string" || typeof value === "boolean") return value;
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+  if (value instanceof Date) return value.toISOString();
+  if (Array.isArray(value)) return value.map((item) => sanitizeConvexValue(item) ?? null);
+  if (typeof value !== "object") return null;
+
+  const sanitized: Record<string, unknown> = {};
+  for (const [key, nestedValue] of Object.entries(value)) {
+    if (key.startsWith("$")) continue;
+    const nextValue = sanitizeConvexValue(nestedValue);
+    if (nextValue !== null) sanitized[key] = nextValue;
+  }
+  return sanitized;
+}
+
 function toContext(source: string, market: Market, article: Article): ContextItem | null {
   const title = article.title;
   const url = article.url ?? article.link;
@@ -27,7 +43,7 @@ function toContext(source: string, market: Market, article: Article): ContextIte
     publishedAt: article.publishedAt ?? article.published_at ?? article.isoDate ?? null,
     matchedKeywords: match.matchedKeywords,
     relevanceScore: match.relevanceScore,
-    raw: article,
+    raw: sanitizeConvexValue(article),
   };
 }
 
