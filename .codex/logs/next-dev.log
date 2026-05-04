@@ -1,0 +1,24 @@
+
+> oddspulse@0.1.0 dev /Users/am.will/Applications/polydash
+> next dev
+
+▲ Next.js 16.2.4 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.1.170:3000
+- Environments: .env.local
+✓ Ready in 358ms
+
+
+> oddspulse@0.1.0 dev /Users/am.will/Applications/polydash
+> next dev
+
+▲ Next.js 16.2.4 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.1.170:3000
+- Environments: .env.local
+✓ Ready in 288ms
+
+ GET /api/sources/status 200 in 68ms (next.js: 63ms, application-code: 6ms)
+ HEAD / 200 in 524ms (next.js: 140ms, application-code: 384ms)
+ GET /api/ingest/run 200 in 543ms (next.js: 34ms, application-code: 509ms)
+ GET / 200 in 314ms (next.js: 6ms, application-code: 308ms)

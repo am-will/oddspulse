@@ -1,0 +1,5 @@
+Run `npx convex login` at any time to create an account and link this deployment.
+- Preparing Convex functions...
+
+Convex AI files are not installed. Run npx convex ai-files install to get started or npx convex ai-files disable to hide this message.
+✔ 22:50:03 Convex functions ready! (373.61ms)

@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+  --background: #f8fafc;
+  --foreground: #111827;
+  --muted: #64748b;
+  --panel: #ffffff;
+  --panel-2: #f1f5f9;
+  --border: #dbe3ee;
+  --accent: #0f766e;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family:
+    "Geist",
+    "Satoshi",
+    "Avenir Next",
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+a {
+  color: inherit;
+}
+
+::selection {
+  background: rgba(15, 118, 110, 0.18);
+}
+
+.font-mono {
+  font-family:
+    "Geist Mono",
+    "JetBrains Mono",
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    monospace;
+}
+
+@keyframes tape {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 0.52;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-rise-in {
+  animation: rise-in 0.48s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-tape {
+  animation: tape 28s linear infinite;
+}
+
+.animate-breathe {
+  animation: breathe 2.4s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}

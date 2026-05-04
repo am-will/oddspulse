@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git init *)",
+      "Bash(git -C /Users/am.will/Applications/polydash add -A)",
+      "Bash(git -C /Users/am.will/Applications/polydash status --short)",
+      "Bash(git -C /Users/am.will/Applications/polydash diff --cached --stat)"
+    ]
+  }
+}
